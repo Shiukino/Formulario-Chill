@@ -1,3 +1,5 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
 import Admins from "./pages/admins";
 import Listado from "./pages/listado";
 import "./styles/app.css";
@@ -11,8 +13,13 @@ function App() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
     >
-      <Admins />
-      <Listado />
+      <Router>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/admin" element={<Admins />} />
+          <Route path="/listado" element={<Listado />} />
+        </Routes>
+      </Router>
     </motion.div>
   );
 }
