@@ -1,0 +1,73 @@
+.formulario {
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 15px rgb(0, 110, 255);
+  width: 500px;
+  color: #fff;
+}
+
+.form-usuario {
+  font-weight: bold;
+  margin-bottom: 25px;
+}
+
+.form-usuario input {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form-guildboss {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #444;
+  background: #222;
+  color: #fff;
+  font-size: 14px;
+  position: relative;
+  z-index: 10;
+  appearance: none;
+  max-height: 100px; /* Altura máxima del dropdown */
+  overflow-y: auto; /* Activa el scroll si hay más opciones */
+}
+
+.box-select-guild {
+  margin-bottom: 10px;
+}
+
+.formulario {
+  overflow: visible;
+}
+
+.btn {
+  width: 100%;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #0056b3;
+}

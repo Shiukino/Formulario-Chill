@@ -1,0 +1,20 @@
+* {
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  color: white;
+  background: url(../assets/fondo.jpg) no-repeat;
+  background-size: auto;
+  font-family: Arial, sans-serif;
+  background-color: black;
+}
+
+.contenedor {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+}
