@@ -1,0 +1,28 @@
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema operativo
+.DS_Store
+
+# Editor
+.vscode/
+
+# Entornos
+.env
+.env.local
+.env.development
+.env.production
+
+# Node
+node_modules/
+
+# Vite / React
+frontend/dist/
+frontend/node_modules/
+frontend/.env
+
+# Express / Backend
+backend/node_modules/
+backend/.env
+backend/chillparty.db
