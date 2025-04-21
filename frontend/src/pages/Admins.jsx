@@ -1,9 +1,9 @@
 import { useState } from "react";
 import axios from "axios";
 import itemsGuild from "../data/itemsGuild";
-import "../styles/Registro.css";
+import "../styles/Admins.css";
 
-export default function Registro() {
+export default function Admins() {
   const [users, setUsers] = useState({
     username: "",
     arma1: "Nada",
