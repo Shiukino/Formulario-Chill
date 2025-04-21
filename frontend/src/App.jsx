@@ -1,9 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { motion } from "framer-motion";
+import PrivateRoute from "./data/PrivateRoute";
 import Login from "./pages/Login";
 import Admins from "./pages/admins";
 import Listado from "./pages/listado";
-import "./styles/app.css";
-import { motion } from "framer-motion";
 
 function App() {
   return (
@@ -13,11 +13,17 @@ function App() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
     >
-      <Router>
+      <Router basename="/Formulario-Chill">
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/admin" element={<Admins />} />
-          <Route path="/listado" element={<Listado />} />
+          <Route
+            path="/admin"
+            element={<PrivateRoute element={<Admins />} />}
+          />
+          <Route
+            path="/listado"
+            element={<PrivateRoute element={<Listado />} />}
+          />
         </Routes>
       </Router>
     </motion.div>

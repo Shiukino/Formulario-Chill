@@ -4,14 +4,6 @@
   padding: 0;
 }
 
-body {
-  color: white;
-  background: url(../assets/fondo.jpg) no-repeat;
-  background-size: auto;
-  font-family: Arial, sans-serif;
-  background-color: black;
-}
-
 .contenedor {
   margin-top: 20px;
   display: flex;
