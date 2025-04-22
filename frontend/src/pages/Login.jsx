@@ -9,19 +9,36 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (username === "admin" && password === "adminpass") {
-      login();
-      navigate("/admin");
-    }
-    if (username === "chillparty" && password === "wonejos") {
-      {
+
+    try {
+      const response = await fetch(
+        "https://formulario-chill.onrender.com/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
         login();
-        navigate("/listado");
+        if (data.role === "admin") {
+          navigate("/admin");
+        } else {
+          navigate("/listado");
+        }
+      } else {
+        alert(data.error || "Credenciales incorrectas");
       }
-    } else {
-      alert("Credenciales incorrectas");
+    } catch (error) {
+      console.error("Error en login:", error);
+      alert("Hubo un error al conectar con el servidor.");
     }
   };
 
@@ -39,9 +56,11 @@ const Login = () => {
               placeholder=" "
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              required
             />
-            <label htmlFor="#">Usuario: </label>
+            <label htmlFor="username">Usuario: </label>
           </div>
+
           <div className="input-contenedor-login">
             <i className="fa-solid fa-lock"></i>
             <input
@@ -50,9 +69,11 @@ const Login = () => {
               placeholder=" "
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
             />
-            <label htmlFor="#">Contraseña: </label>
+            <label htmlFor="Password">Contraseña: </label>
           </div>
+
           <button className="btn-login" type="submit">
             Acceder
           </button>
