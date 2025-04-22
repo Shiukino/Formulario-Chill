@@ -170,6 +170,7 @@ app.delete("/api/usuarios", (req, res) => {
 
 //  Iniciar servidor
 const PORT = process.env.PORT || 5000;
+console.log("Intentando iniciar servidor...");
 app.listen(PORT, () =>
   console.log(`Servidor escuchando en http://localhost:${PORT}`)
 );
