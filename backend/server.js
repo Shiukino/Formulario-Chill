@@ -1,4 +1,5 @@
 require("dotenv").config();
+const bcrypt = require("bcrypt");
 const express = require("express");
 const cors = require("cors");
 const sqlite3 = require("sqlite3").verbose();
@@ -7,16 +8,57 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const createUsersTableQuery = `
+  CREATE TABLE IF NOT EXISTS admins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE,
+    password TEXT,
+    role TEXT
+);
+`;
+
+db.run(createUsersTableQuery, (err) => {
+  if (err) console.error("Error al crear tabla de admins:", err);
+});
+
+app.post("/register-admin", async (req, res) => {
+  const { username, password } = req.body;
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  db.run(
+    `INSERT INTO admins (username, password, role) VALUES (?, ?, ?)`,
+    [username, hashedPassword, "admin"],
+    (err) => {
+      if (err) {
+        return res.status(500).json({ error: "Error al registrar admin" });
+      }
+      res.status(201).json({ message: "Admin registrado con éxito" });
+    }
+  );
+});
 
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
 
-  if (username === "admin" && password === ADMIN_PASSWORD) {
-    res.json({ role: "admin", message: "Bienvenido, admin!" });
-  } else {
-    res.json({ role: "guest", message: "Bienvenido, visitante!" });
-  }
+  db.get(
+    `SELECT * FROM admins WHERE username = ?`,
+    [username],
+    async (err, user) => {
+      if (err) {
+        return res.status(500).json({ error: "Error en el servidor" });
+      }
+      if (!user) {
+        return res.status(401).json({ error: "Usuario no encontrado" });
+      }
+
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) {
+        return res.status(401).json({ error: "Contraseña incorrecta" });
+      }
+
+      res.json({ role: user.role, message: `Bienvenido, ${user.role}!` });
+    }
+  );
 });
 
 const slots = [
@@ -46,7 +88,7 @@ const db = new sqlite3.Database("chillparty.db", (err) => {
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT,
+        username TEXT UNIQUE,
         ${columns}
       )
     `;
