@@ -4,6 +4,7 @@ import PrivateRoute from "./data/PrivateRoute";
 import Login from "./pages/Login";
 import Admins from "./pages/admins";
 import Listado from "./pages/listado";
+import "./styles/App.css";
 
 function App() {
   return (
