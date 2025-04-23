@@ -2,29 +2,25 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
-const sqlite3 = require("sqlite3").verbose();
+const { Pool } = require("pg");
 
 const app = express();
 app.use(
   cors({
     origin: "https://shiukino.github.io",
-    methods: ["GET", "POST", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type"],
-    credentials: true,
   })
 );
 app.use(express.json());
 
-const db = new sqlite3.Database("chillparty.db", (err) => {
-  if (err) {
-    console.error("Error al abrir la base de datos:", err);
-  } else {
-    console.log("Conectado a SQLite");
-    crearTablas();
-  }
+// Conexión a PostgreSQL
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false, // importante para Neon
+  },
 });
 
-//  Slots de items de los usuarios
+// Slots
 const slots = [
   "arma1",
   "arma2",
@@ -42,77 +38,71 @@ const slots = [
   "archiboss",
 ];
 
-//  Función para crear las tablas si no existen
-function crearTablas() {
+// Crear tablas
+async function crearTablas() {
   const columnasUsuarios = slots.map((slot) => `${slot} TEXT`).join(",\n");
 
-  const crearUsuarios = `
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       username TEXT UNIQUE,
       ${columnasUsuarios}
-    );
-  `;
+    )
+  `);
 
-  const crearAdmins = `
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS admins (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       username TEXT UNIQUE,
       password TEXT,
       role TEXT
-    );
-  `;
-
-  db.run(crearUsuarios);
-  db.run(crearAdmins);
+    )
+  `);
 }
 
-//  Ruta para registrar un admin
+crearTablas();
+
+// Rutas
 app.post("/register-admin", async (req, res) => {
   const { username, password } = req.body;
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  db.run(
-    `INSERT INTO admins (username, password, role) VALUES (?, ?, ?)`,
-    [username, hashedPassword, "admin"],
-    (err) => {
-      if (err) {
-        console.error("Error al registrar admin:", err);
-        return res.status(500).json({ error: "Error al registrar admin" });
-      }
-      res.status(201).json({ message: "Admin registrado con éxito" });
-    }
-  );
+  try {
+    await pool.query(
+      `INSERT INTO admins (username, password, role) VALUES ($1, $2, $3)`,
+      [username, hashedPassword, "admin"]
+    );
+    res.status(201).json({ message: "Admin registrado con éxito" });
+  } catch (error) {
+    console.error("Error al registrar admin:", error);
+    res.status(500).json({ error: "Error al registrar admin" });
+  }
 });
 
-//  Ruta para login
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
-  db.get(
-    `SELECT * FROM admins WHERE username = ?`,
-    [username],
-    async (err, user) => {
-      if (err) return res.status(500).json({ error: "Error en el servidor" });
-      if (!user)
-        return res.status(401).json({ error: "Usuario no encontrado" });
+  try {
+    const result = await pool.query(
+      `SELECT * FROM admins WHERE username = $1`,
+      [username]
+    );
 
-      const match = await bcrypt.compare(password, user.password);
-      if (!match)
-        return res.status(401).json({ error: "Contraseña incorrecta" });
+    const user = result.rows[0];
+    if (!user) return res.status(401).json({ error: "Usuario no encontrado" });
 
-      res.json({ role: user.role, message: `Bienvenido, ${user.role}!` });
-    }
-  );
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) return res.status(401).json({ error: "Contraseña incorrecta" });
+
+    res.json({ role: user.role, message: `Bienvenido, ${user.role}!` });
+  } catch (error) {
+    console.error("Error en login:", error);
+    res.status(500).json({ error: "Error en el servidor" });
+  }
 });
 
-//  Ping de prueba
-app.get("/ping", (req, res) => {
-  res.json({ message: "pong" });
-});
-
-//  Guardar usuario visitante
-app.post("/api/usuarios", (req, res) => {
+// Guardar visitante
+app.post("/api/usuarios", async (req, res) => {
   const { username } = req.body;
   const values = slots.map((slot) => req.body[slot] || null);
 
@@ -120,38 +110,39 @@ app.post("/api/usuarios", (req, res) => {
     return res.status(400).json({ error: "Falta el nombre de usuario" });
   }
 
-  const placeholders = slots.map(() => "?").join(", ");
-  const query = `INSERT INTO users (username, ${slots.join(
-    ", "
-  )}) VALUES (?, ${placeholders})`;
-
-  db.run(query, [username, ...values], (err) => {
-    if (err)
-      return res.status(500).json({ error: "Error al guardar el usuario" });
+  try {
+    const placeholders = slots.map((_, i) => `$${i + 2}`).join(", ");
+    const query = `INSERT INTO users (username, ${slots.join(
+      ", "
+    )}) VALUES ($1, ${placeholders})`;
+    await pool.query(query, [username, ...values]);
     res.status(201).json({ message: "Usuario guardado con éxito" });
-  });
+  } catch (error) {
+    console.error("Error al guardar usuario:", error);
+    res.status(500).json({ error: "Error al guardar el usuario" });
+  }
 });
 
-//  Buscar usuarios por ítem
-app.get("/api/usuarios", (req, res) => {
+// Buscar por ítem
+app.get("/api/usuarios", async (req, res) => {
   const item = req.query.item;
   if (!item) return res.status(400).json({ error: "Falta el ítem a buscar" });
 
-  const conditions = slots.map((slot) => `${slot} = ?`).join(" OR ");
-  const values = Array(slots.length).fill(item);
+  const conditions = slots.map((slot) => `${slot} = $1`).join(" OR ");
 
-  db.all(
-    `SELECT username FROM users WHERE ${conditions}`,
-    values,
-    (err, rows) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json(rows);
-    }
-  );
+  try {
+    const result = await pool.query(
+      `SELECT username FROM users WHERE ${conditions}`,
+      [item]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-//  Eliminar ítem de usuario
-app.delete("/api/usuarios", (req, res) => {
+// Eliminar ítem de usuario
+app.delete("/api/usuarios", async (req, res) => {
   const { username, item } = req.query;
 
   if (!username || !item) {
@@ -161,23 +152,33 @@ app.delete("/api/usuarios", (req, res) => {
   }
 
   const updates = slots
-    .map((slot) => `${slot} = CASE WHEN ${slot} = ? THEN NULL ELSE ${slot} END`)
+    .map(
+      (slot, i) =>
+        `${slot} = CASE WHEN ${slot} = $${i + 1} THEN NULL ELSE ${slot} END`
+    )
     .join(", ");
   const values = Array(slots.length).fill(item);
   values.push(username);
 
-  const query = `UPDATE users SET ${updates} WHERE username = ?`;
+  const query = `UPDATE users SET ${updates} WHERE username = $${
+    slots.length + 1
+  }`;
 
-  db.run(query, values, (err) => {
-    if (err)
-      return res.status(500).json({ error: "Error al eliminar el ítem" });
+  try {
+    await pool.query(query, values);
     res.status(200).json({ message: "Ítem eliminado exitosamente" });
-  });
+  } catch (error) {
+    res.status(500).json({ error: "Error al eliminar el ítem" });
+  }
 });
 
-//  Iniciar servidor
+// Prueba
+app.get("/ping", (req, res) => {
+  res.json({ message: "pong" });
+});
+
+// Iniciar servidor
 const PORT = process.env.PORT || 5000;
-console.log("Intentando iniciar servidor...");
 app.listen(PORT, () =>
   console.log(`Servidor escuchando en http://localhost:${PORT}`)
 );
