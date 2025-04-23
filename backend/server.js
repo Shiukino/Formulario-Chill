@@ -8,6 +8,9 @@ const app = express();
 app.use(
   cors({
     origin: "https://shiukino.github.io",
+    methods: ["GET", "POST", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
+    credentials: true,
   })
 );
 app.use(express.json());
