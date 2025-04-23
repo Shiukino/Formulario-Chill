@@ -4,14 +4,12 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const sqlite3 = require("sqlite3").verbose();
 
-const corsOptions = {
-  origin: "http://localhost:5173",
-  methods: ["GET", "POST", "DELETE", "PUT"],
-  allowedHeaders: ["Content-Type"],
-};
-
 const app = express();
-app.use(cors(corsOptions));
+app.use(
+  cors({
+    origin: "https://shiukino.github.io",
+  })
+);
 app.use(express.json());
 
 const db = new sqlite3.Database("chillparty.db", (err) => {
