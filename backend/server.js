@@ -62,22 +62,22 @@ async function crearTablas() {
 
 crearTablas();
 
-// Rutas
-app.post("/register-admin", async (req, res) => {
-  const { username, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
+// Ruta desactivada intencionalmente para evitar la creación de nuevos admins
+// app.post("/register-admin", async (req, res) => {
+//   const { username, password } = req.body;
+//   const hashedPassword = await bcrypt.hash(password, 10);
 
-  try {
-    await pool.query(
-      `INSERT INTO admins (username, password, role) VALUES ($1, $2, $3)`,
-      [username, hashedPassword, "admin"]
-    );
-    res.status(201).json({ message: "Admin registrado con éxito" });
-  } catch (error) {
-    console.error("Error al registrar admin:", error);
-    res.status(500).json({ error: "Error al registrar admin" });
-  }
-});
+//   try {
+//     await pool.query(
+//       `INSERT INTO admins (username, password, role) VALUES ($1, $2, $3)`,
+//       [username, hashedPassword, "admin"]
+//     );
+//     res.status(201).json({ message: "Admin registrado con éxito" });
+//   } catch (error) {
+//     console.error("Error al registrar admin:", error);
+//     res.status(500).json({ error: "Error al registrar admin" });
+//   }
+// });
 
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
@@ -101,7 +101,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Guardar visitante
+// Guardar personajes
 app.post("/api/usuarios", async (req, res) => {
   const { username } = req.body;
   const values = slots.map((slot) => req.body[slot] || null);

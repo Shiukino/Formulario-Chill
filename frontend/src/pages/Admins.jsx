@@ -60,8 +60,11 @@ export default function Admins() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const backendURL = import.meta.env.VITE_API_URL;
+
     try {
-      await axios.post("http://localhost:5000/api/usuarios", users);
+      await axios.post(`${backendURL}/api/usuarios`, users);
       alert("Datos guardados con éxito");
       setUsers({
         username: "",
