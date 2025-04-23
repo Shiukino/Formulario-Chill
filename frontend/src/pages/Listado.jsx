@@ -29,6 +29,8 @@ export default function Listado() {
     }
   };
 
+  const backendURL = import.meta.env.VITE_API_URL;
+
   const fetchUsers = async (item) => {
     if (selectedItem === item) return;
 
@@ -38,7 +40,7 @@ export default function Listado() {
 
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/usuarios?item=${encodeURIComponent(item)}`
+        `${backendURL}/api/usuarios?item=${encodeURIComponent(item)}`
       );
 
       const sortedUsers = response.data.sort((a, b) =>
@@ -50,40 +52,6 @@ export default function Listado() {
       setUsers([]);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const deleteUser = async (username, item) => {
-    try {
-      await axios.delete(
-        `http://localhost:5000/api/usuarios?username=${encodeURIComponent(
-          username
-        )}&item=${encodeURIComponent(item)}`
-      );
-
-      setUsers((prevUsers) =>
-        prevUsers.map((user) => {
-          if (user.username === username) {
-            const updatedUser = { ...user };
-            Object.keys(updatedUser).forEach((key) => {
-              if (updatedUser[key] === item) {
-                updatedUser[key] = null;
-              }
-            });
-            return updatedUser;
-          }
-          return user;
-        })
-      );
-
-      alert(`Ítem ${item} eliminado del usuario ${username} exitosamente`);
-    } catch (error) {
-      console.error("Error al eliminar el ítem:", error);
-      setError(
-        error.response
-          ? error.response.data.error
-          : "Error al eliminar el ítem."
-      );
     }
   };
 
@@ -150,17 +118,7 @@ export default function Listado() {
                   .map((userGroup, colIdx) => (
                     <ul key={colIdx} className="usuarios-columna">
                       {userGroup.map((user, idx) => (
-                        <li key={idx}>
-                          {user.username}
-                          <button
-                            className="btn-borrar"
-                            onClick={() =>
-                              deleteUser(user.username, selectedItem)
-                            }
-                          >
-                            X
-                          </button>
-                        </li>
+                        <li key={idx}>{user.username}</li>
                       ))}
                     </ul>
                   ))
