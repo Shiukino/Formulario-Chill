@@ -27,6 +27,16 @@
   flex: 1 1 200px;
 }
 
+.boss-activo {
+  color: yellow;
+}
+
+.item-activo {
+  background-color: #bb5c1d;
+  color: rgb(0, 0, 0);
+  font-weight: bold;
+}
+
 .icono-boss {
   cursor: pointer;
   font-size: 1.5rem;

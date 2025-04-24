@@ -7,10 +7,12 @@ const Login = () => {
   const { login } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
     const API_URL = import.meta.env.VITE_API_URL;
 
@@ -38,45 +40,49 @@ const Login = () => {
     } catch (error) {
       console.error("Error en login:", error);
       alert("Hubo un error al conectar con el servidor.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="contenedor-login">
-      <div className="formulario-login">
-        <form onSubmit={handleSubmit}>
-          <h2>Login</h2>
+    <div className="pagina-login">
+      <div className="contenedor-login">
+        <div className="formulario-login">
+          <form onSubmit={handleSubmit}>
+            <h2>Login</h2>
 
-          <div className="input-contenedor-login">
-            <i className="fa-solid fa-user custom-carta"></i>
-            <input
-              type="text"
-              id="username"
-              placeholder=" "
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-            <label htmlFor="username">Usuario: </label>
-          </div>
+            <div className="input-contenedor-login">
+              <i className="fa-solid fa-user custom-carta"></i>
+              <input
+                type="text"
+                id="username"
+                placeholder=" "
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+              <label htmlFor="username">Usuario: </label>
+            </div>
 
-          <div className="input-contenedor-login">
-            <i className="fa-solid fa-lock"></i>
-            <input
-              type="password"
-              id="Password"
-              placeholder=" "
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <label htmlFor="Password">Contraseña: </label>
-          </div>
+            <div className="input-contenedor-login">
+              <i className="fa-solid fa-lock"></i>
+              <input
+                type="password"
+                id="Password"
+                placeholder=" "
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <label htmlFor="Password">Contraseña: </label>
+            </div>
 
-          <button className="btn-login" type="submit">
-            Acceder
-          </button>
-        </form>
+            <button className="btn-login" type="submit" disabled={isLoading}>
+              {isLoading ? <span className="spinner"></span> : "Acceder"}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

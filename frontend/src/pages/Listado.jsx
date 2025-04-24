@@ -74,7 +74,16 @@ export default function Listado() {
       <h2>Selecciona un Boss</h2>
       <div className="munu-boss">
         {Object.keys(itemsGuild).map((boss) => (
-          <div key={boss} className="boss-item">
+          <div
+            key={boss}
+            className={`boss-item ${
+              selectedBoss === boss ||
+              (selectedItem &&
+                itemsGuild[boss].some((item) => item.name === selectedItem))
+                ? "boss-activo"
+                : ""
+            }`}
+          >
             <div
               className="icono-boss"
               onClick={() => toggleItems(boss)}
@@ -89,6 +98,9 @@ export default function Listado() {
                   (uniqueItem, index) => (
                     <li key={index}>
                       <button
+                        className={
+                          selectedItem === uniqueItem ? "item-activo" : ""
+                        }
                         onClick={() => {
                           fetchUsers(uniqueItem);
                           setSelectedBoss(null);
