@@ -1,22 +1,30 @@
 .contenedor-lista {
-  background-color: transparent;
+  width: 100%;
+  height: 100vh;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-align: center;
+  background: url(../assets/fondo.jpg) no-repeat;
   color: #fff;
+  padding: 10px;
 }
 
 .munu-boss {
-  background: #1e1e1e;
-  position: relative;
   display: flex;
-  margin: 20px;
-  gap: 10px;
+  gap: 50px;
+  margin: 10px;
+  padding: 5px;
+  border-radius: 20px;
 }
 
 .boss-item {
-  box-shadow: 0px 0px 15px rgb(0, 110, 255);
+  box-shadow: 3px 3px 15px rgb(0, 110, 255);
+  background: #000000;
   width: 200px;
   text-align: center;
   border-radius: 8px;
   position: relative;
+  flex: 1 1 200px;
 }
 
 .icono-boss {
@@ -61,7 +69,8 @@ h3 {
 }
 
 .cuadro-usuarios {
-  margin-top: 20px;
+  height: 80%;
+  margin: 20px 10px;
   padding: 10px;
   border-radius: 8px;
   position: relative;
@@ -77,18 +86,9 @@ h3 {
   padding: 10px;
 }
 
-.btn-borrar {
-  cursor: pointer;
-  background-color: transparent;
-  font-size: large;
-  border: none;
-  margin-left: 10px;
-  padding: 3px;
-  color: red;
-}
-
 .usuarios-grid {
   display: flex;
+  margin: 20px;
   gap: 20px;
 }
 

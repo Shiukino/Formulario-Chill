@@ -88,7 +88,12 @@ export default function Listado() {
                 {[...new Set(itemsGuild[boss].map((item) => item.name))].map(
                   (uniqueItem, index) => (
                     <li key={index}>
-                      <button onClick={() => fetchUsers(uniqueItem)}>
+                      <button
+                        onClick={() => {
+                          fetchUsers(uniqueItem);
+                          setSelectedBoss(null);
+                        }}
+                      >
                         {uniqueItem}
                       </button>
                     </li>
@@ -110,7 +115,7 @@ export default function Listado() {
               {users.length > 0 ? (
                 users
                   .reduce((acc, user, index) => {
-                    const columnIndex = Math.floor(index / 10);
+                    const columnIndex = Math.floor(index / 5);
                     if (!acc[columnIndex]) acc[columnIndex] = [];
                     acc[columnIndex].push(user);
                     return acc;
