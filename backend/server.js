@@ -81,11 +81,12 @@ crearTablas();
 
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
+  const usernameLower = username.toLowerCase();
 
   try {
     const result = await pool.query(
       `SELECT * FROM admins WHERE username = $1`,
-      [username]
+      [usernameLower]
     );
 
     const user = result.rows[0];
@@ -104,7 +105,13 @@ app.post("/login", async (req, res) => {
 // Guardar personajes
 app.post("/api/usuarios", async (req, res) => {
   const { username } = req.body;
-  const values = slots.map((slot) => req.body[slot] || null);
+  const values = slots.map((slot) => {
+    const value = req.body[slot];
+    if (value) {
+      return JSON.stringify({ item: value, entregado: false });
+    }
+    return null;
+  });
 
   if (!username) {
     return res.status(400).json({ error: "Falta el nombre de usuario" });
@@ -128,7 +135,9 @@ app.get("/api/usuarios", async (req, res) => {
   const item = req.query.item;
   if (!item) return res.status(400).json({ error: "Falta el ítem a buscar" });
 
-  const conditions = slots.map((slot) => `${slot} = $1`).join(" OR ");
+  const conditions = slots
+    .map((slot) => `${slot} ->> 'item' = $1`)
+    .join(" OR ");
 
   try {
     const result = await pool.query(
@@ -141,34 +150,42 @@ app.get("/api/usuarios", async (req, res) => {
   }
 });
 
-// Eliminar ítem de usuario
-app.delete("/api/usuarios", async (req, res) => {
-  const { username, item } = req.query;
+// Marcar ítem como entregado
+app.patch("/api/usuarios", async (req, res) => {
+  const { username, item } = req.body;
 
   if (!username || !item) {
-    return res
-      .status(400)
-      .json({ error: "Faltan parámetros 'username' o 'item'" });
+    return res.status(400).json({ error: "Faltan 'username' o 'item'" });
   }
 
+  // Armamos el query que revisa cada slot
   const updates = slots
-    .map(
-      (slot, i) =>
-        `${slot} = CASE WHEN ${slot} = $${i + 1} THEN NULL ELSE ${slot} END`
-    )
+    .map((slot, i) => {
+      return `
+      ${slot} = CASE
+        WHEN ${slot} ->> 'item' = $${i + 1}
+        THEN jsonb_set(${slot}, '{entregado}', 'true', true)
+        ELSE ${slot}
+      END
+    `;
+    })
     .join(", ");
+
   const values = Array(slots.length).fill(item);
   values.push(username);
 
-  const query = `UPDATE users SET ${updates} WHERE username = $${
-    slots.length + 1
-  }`;
+  const query = `
+    UPDATE users
+    SET ${updates}
+    WHERE username = $${slots.length + 1}
+  `;
 
   try {
     await pool.query(query, values);
-    res.status(200).json({ message: "Ítem eliminado exitosamente" });
+    res.status(200).json({ message: "Ítem marcado como entregado" });
   } catch (error) {
-    res.status(500).json({ error: "Error al eliminar el ítem" });
+    console.error("Error al actualizar ítem:", error);
+    res.status(500).json({ error: "Error al marcar el ítem" });
   }
 });
 
