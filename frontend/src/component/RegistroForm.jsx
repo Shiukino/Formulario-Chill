@@ -20,7 +20,8 @@ export default function RegistroForm() {
     anillo1: "Nada",
     anillo2: "Nada",
     cinturon: "Nada",
-    archiboss: "Nada",
+    archiboss1: "Nada",
+    archiboss2: "Nada",
   });
 
   const groupedItems = Object.values(itemsGuild)
@@ -45,7 +46,8 @@ export default function RegistroForm() {
     "anillo1",
     "anillo2",
     "cinturon",
-    "archiboss",
+    "archiboss1",
+    "archiboss2",
   ];
 
   const handleChange = (e) => {
@@ -82,7 +84,8 @@ export default function RegistroForm() {
         anillo1: "Nada",
         anillo2: "Nada",
         cinturon: "Nada",
-        archiboss: "Nada",
+        archiboss1: "Nada",
+        archiboss2: "Nada",
       });
     } catch (error) {
       console.error("Error al guardar", error);
