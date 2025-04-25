@@ -24,14 +24,6 @@ export default function ListadoEntregas() {
     }
   };
 
-  if (!username || !items) {
-    console.error("Faltan datos para marcar como entregado:", {
-      username,
-      items,
-    });
-    return;
-  }
-
   const marcarEntregado = async (item) => {
     try {
       await axios.patch(`${backendURL}/api/usuarios`, {
