@@ -107,10 +107,10 @@ h3 {
   margin: 0;
 }
 
-.estado-item .entregado {
+.estado-item.entregado {
   color: red;
 }
 
-.estado-item .no-entregado {
+.estado-item.no-entregado {
   color: green;
 }

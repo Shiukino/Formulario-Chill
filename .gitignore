@@ -27,3 +27,4 @@ backend/node_modules/
 backend/.env
 backend/chillparty.db
 backend/setupDB.js
+backend/peticionesAuxiliares.js
