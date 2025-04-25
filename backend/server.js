@@ -35,7 +35,8 @@ const slots = [
   "anillo1",
   "anillo2",
   "cinturon",
-  "archiboss",
+  "archiboss1",
+  "archiboss2",
 ];
 
 app.post("/login", async (req, res) => {
