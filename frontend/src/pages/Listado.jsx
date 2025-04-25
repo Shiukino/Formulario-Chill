@@ -135,7 +135,18 @@ export default function Listado() {
                   .map((userGroup, colIdx) => (
                     <ul key={colIdx} className="usuarios-columna">
                       {userGroup.map((user, idx) => (
-                        <li key={idx}>{user.username}</li>
+                        <li key={idx}>
+                          {user.username}{" "}
+                          {Object.values(user).some(
+                            (slot) =>
+                              slot?.item === selectedItem &&
+                              slot?.entregado === true
+                          ) ? (
+                            <span className="estado-item entregado">❌</span>
+                          ) : (
+                            <span className="estado-item no-entregado">✅</span>
+                          )}
+                        </li>
                       ))}
                     </ul>
                   ))
