@@ -2,8 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { motion } from "framer-motion";
 import PrivateRoute from "./data/PrivateRoute";
 import Login from "./pages/Login";
-import Admins from "./pages/admins";
-import Listado from "./pages/listado";
+import Admins from "./pages/Admins";
+import Listado from "./pages/Listado";
 import "./styles/App.css";
 
 function App() {

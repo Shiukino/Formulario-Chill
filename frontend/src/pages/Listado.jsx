@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
-import itemsGuild from "../data/itemsGuild";
+import itemsGuild from "../component/itemsGuild.js";
 import "../styles/Listado.css";
 
 const bossNames = {

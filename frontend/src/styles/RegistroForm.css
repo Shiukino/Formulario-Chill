@@ -44,8 +44,8 @@ select {
   position: relative;
   z-index: 10;
   appearance: none;
-  max-height: 100px; /* Altura máxima del dropdown */
-  overflow-y: auto; /* Activa el scroll si hay más opciones */
+  max-height: 100px;
+  overflow-y: auto;
 }
 
 .box-select-guild {

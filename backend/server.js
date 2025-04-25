@@ -189,6 +189,72 @@ app.patch("/api/usuarios", async (req, res) => {
   }
 });
 
+// Obtener todos los ítems de un usuario
+app.get("/api/usuarios/:username", async (req, res) => {
+  const username = req.params.username;
+
+  if (!username) {
+    return res.status(400).json({ error: "Falta el nombre de usuario" });
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT ${slots.join(", ")} FROM users WHERE username = $1`,
+      [username]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    const row = result.rows[0];
+
+    const items = Object.entries(row)
+      .map(([slot, value]) => {
+        if (value === null) return null;
+
+        return {
+          slot,
+          item: value.item,
+          entregado: value.entregado ?? false, // por si no existe la propiedad
+        };
+      })
+      .filter(Boolean); // elimina los null
+
+    res.json(items);
+  } catch (error) {
+    console.error("Error al obtener ítems del usuario:", error);
+    res.status(500).json({ error: "Error al obtener los ítems" });
+  }
+});
+
+// Obtener todos los usuarios con sus ítems detallados
+app.get("/api/usuarios/detallado", async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT username, ${slots.join(", ")} FROM users`
+    );
+
+    const usuarios = result.rows.map((row) => {
+      const { username, ...resto } = row;
+      const items = Object.entries(resto)
+        .filter(([_, value]) => value !== null)
+        .map(([slot, value]) => ({
+          slot,
+          item: value.item,
+          entregado: value.entregado ?? false,
+        }));
+
+      return { username, items };
+    });
+
+    res.json(usuarios);
+  } catch (error) {
+    console.error("Error al obtener datos detallados:", error);
+    res.status(500).json({ error: "Error al obtener datos detallados" });
+  }
+});
+
 // Prueba
 app.get("/ping", (req, res) => {
   res.json({ message: "pong" });
