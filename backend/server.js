@@ -38,30 +38,6 @@ const slots = [
   "archiboss",
 ];
 
-// Crear tablas
-async function crearTablas() {
-  const columnasUsuarios = slots.map((slot) => `${slot} TEXT`).join(",\n");
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      username TEXT UNIQUE,
-      ${columnasUsuarios}
-    )
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS admins (
-      id SERIAL PRIMARY KEY,
-      username TEXT UNIQUE,
-      password TEXT,
-      role TEXT
-    )
-  `);
-}
-
-crearTablas();
-
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
   const usernameLower = username.toLowerCase();
@@ -197,20 +173,37 @@ app.get("/api/usuarios", async (req, res) => {
   if (!item) return res.status(400).json({ error: "Falta el ítem a buscar" });
 
   try {
-    const queries = slots.map((slot) => {
-      return `
-        SELECT username, '${slot}' AS slot, items -> '${slot}' ->> 'entregado' AS entregado
-        FROM users
-        WHERE items -> '${slot}' ->> 'item' = $1
-      `;
+    const conditions = slots
+      .map((slot, index) => `(${slot} ->> 'item' = $1)`)
+      .join(" OR ");
+
+    const query = `SELECT username, ${slots
+      .map((slot, index) => `${slot} as slot${index}`)
+      .join(", ")} FROM users WHERE ${conditions}`;
+
+    const result = await pool.query(query, [item]);
+
+    // Array de { username, slot, entregado }
+    const usuarios = [];
+
+    result.rows.forEach((row) => {
+      const { username, ...rest } = row;
+
+      Object.values(rest).forEach((slot) => {
+        if (slot?.item === item) {
+          usuarios.push({
+            username,
+            slot: slot.item,
+            entregado: slot.entregado === true ? "true" : "false",
+          });
+        }
+      });
     });
 
-    const unionQuery = queries.join(" UNION ALL ");
-
-    const result = await pool.query(unionQuery, [item]);
-    res.json(result.rows);
+    res.json(usuarios);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error en /api/usuarios:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 });
 
