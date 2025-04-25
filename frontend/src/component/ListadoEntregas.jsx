@@ -1,8 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
-import "../styles/ListaEntregas.css";
+import "../styles/ListadoEntregas.css";
 
-export default function ListaEntregas() {
+export default function ListadoEntregas() {
   const [username, setUsername] = useState("");
   const [items, setItems] = useState([]);
   const [error, setError] = useState("");
