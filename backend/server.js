@@ -63,21 +63,21 @@ async function crearTablas() {
 crearTablas();
 
 // Ruta desactivada intencionalmente para evitar la creación de nuevos admins
-app.post("/register-miembro", async (req, res) => {
-  const { username, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
+// app.post("/register-miembro", async (req, res) => {
+//   const { username, password } = req.body;
+//   const hashedPassword = await bcrypt.hash(password, 10);
 
-  try {
-    await pool.query(
-      `INSERT INTO admins (username, password, role) VALUES ($1, $2, $3)`,
-      [username, hashedPassword, "miembro"]
-    );
-    res.status(201).json({ message: "Miembro registrado con éxito" });
-  } catch (error) {
-    console.error("Error al registrar miembro:", error);
-    res.status(500).json({ error: "Error al registrar miembro" });
-  }
-});
+//   try {
+//     await pool.query(
+//       `INSERT INTO admins (username, password, role) VALUES ($1, $2, $3)`,
+//       [username, hashedPassword, "miembro"]
+//     );
+//     res.status(201).json({ message: "Miembro registrado con éxito" });
+//   } catch (error) {
+//     console.error("Error al registrar miembro:", error);
+//     res.status(500).json({ error: "Error al registrar miembro" });
+//   }
+// });
 
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
