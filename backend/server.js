@@ -191,45 +191,26 @@ app.patch("/api/usuarios", async (req, res) => {
   }
 });
 
-// Nuevo en Listado.jsx (prueba)
+// Listado.jsx
 app.get("/api/usuarios", async (req, res) => {
   const item = req.query.item;
-
-  if (!item) {
-    return res.status(400).json({ error: "Falta el parámetro 'item'" });
-  }
+  if (!item) return res.status(400).json({ error: "Falta el ítem a buscar" });
 
   try {
-    const usuarios = await db.all("SELECT * FROM usuarios");
+    const queries = slots.map((slot) => {
+      return `
+        SELECT username, '${slot}' AS slot, items -> '${slot}' ->> 'entregado' AS entregado
+        FROM users
+        WHERE items -> '${slot}' ->> 'item' = $1
+      `;
+    });
 
-    const usuariosConItem = usuarios
-      .map((usuario) => {
-        const resultado = {
-          username: usuario.username,
-        };
+    const unionQuery = queries.join(" UNION ALL ");
 
-        const tieneItem = Object.entries(usuario).some(([key, value]) => {
-          if (key === "username") return false;
-
-          try {
-            const slot = JSON.parse(value);
-            if (slot.item === item) {
-              resultado[key] = slot;
-              return true;
-            }
-          } catch {
-            return false;
-          }
-        });
-
-        return tieneItem ? resultado : null;
-      })
-      .filter(Boolean); // Elimina los null
-
-    res.json(usuariosConItem);
+    const result = await pool.query(unionQuery, [item]);
+    res.json(result.rows);
   } catch (error) {
-    console.error("Error al filtrar usuarios por item:", error.message);
-    res.status(500).json({ error: "Error del servidor" });
+    res.status(500).json({ error: error.message });
   }
 });
 
